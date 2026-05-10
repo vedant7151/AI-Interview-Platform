@@ -15,7 +15,7 @@ export const JobInfoTable = pgTable("job_info", {
     name: varchar().notNull(),
     experienceLevel: experienceLevlEnum().notNull(),
     description: varchar().notNull(),
-    userId: varchar().references(() => Users.id, { onDelete: "cascade" }).notNull(),
+    userId: varchar().references(() => Users.id, { onDelete: "cascade", onUpdate: "cascade" }).notNull(),
     createdAt,
     updatedAt
 })

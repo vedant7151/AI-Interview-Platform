@@ -9,6 +9,7 @@ import { JobInfoTable } from "@/drizzle/schema"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import { getJobInfoIdTag } from "./dbCache"
 import { insertJobInfo, updateJobInfo as updateJobInfoDB } from "./db"
+import { ensureUser } from "@/features/users/actions"
 
 export async function createJobInfo(unsafeData: z.infer<typeof jobInfoSchema>) {
   const userContext = await getCurrentUser()
@@ -27,6 +28,14 @@ export async function createJobInfo(unsafeData: z.infer<typeof jobInfoSchema>) {
     return {
       error: true,
       message: "Invalid job data",
+    }
+  }
+
+  const ensureResult = await ensureUser()
+  if (!ensureResult?.ok) {
+    return {
+      error: true as const,
+      message: "Could not sync authenticated user before creating job info.",
     }
   }
 

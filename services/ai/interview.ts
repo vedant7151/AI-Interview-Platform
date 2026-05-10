@@ -5,31 +5,38 @@ import { google } from "./models/google"
 
 export async function generateAiInterviewFeedback({
   humeChatId,
+  interviewId,
   jobInfo,
   userName,
 }: {
   humeChatId: string
+  interviewId: string
   jobInfo: Pick<
     typeof JobInfoTable.$inferSelect,
     "title" | "description" | "experienceLevel"
   >
   userName: string
 }) {
-  const messages = await fetchChatMessages(humeChatId)
+  const messages = await fetchChatMessages(humeChatId, interviewId)
 
-  const formattedMessages = messages
+  const formattedMessages = (messages as Array<Record<string, unknown>>)
     .map(message => {
-      if (message.type !== "USER_MESSAGE" && message.type !== "AGENT_MESSAGE") {
+      if (message == null || typeof message !== "object") return null
+
+      const type = message.type as string | undefined
+      const messageText = message.messageText as string | undefined
+      const role = message.role as string | undefined
+
+      if (type !== "USER_MESSAGE" && type !== "AGENT_MESSAGE") {
         return null
       }
-      if (message.messageText == null) return null
+      if (messageText == null) return null
 
       return {
         speaker:
-          message.type === "USER_MESSAGE" ? "interviewee" : "interviewer",
-        text: message.messageText,
-        emotionFeatures:
-          message.role === "USER" ? message.emotionFeatures : undefined,
+          type === "USER_MESSAGE" ? "interviewee" : "interviewer",
+        text: messageText,
+        emotionFeatures: role === "USER" ? message.emotionFeatures : undefined,
       }
     })
     .filter(f => f != null)

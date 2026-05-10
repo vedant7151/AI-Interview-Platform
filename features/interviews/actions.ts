@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "@/services/clerk/lib/getCurrentUser"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
+import { revalidatePath } from "next/cache"
 import { getJobInfoIdTag } from "../jobinfos/dbCache"
 import { db } from "@/drizzle/db"
 import { and, eq } from "drizzle-orm"
@@ -134,6 +135,7 @@ export async function generateInterviewFeedback(interviewId: string) {
 
   const feedback = await generateAiInterviewFeedback({
     humeChatId: interview.humanChatid,
+    interviewId,
     jobInfo: interview.jobInfo,
     userName: user.name,
   })
@@ -146,6 +148,8 @@ export async function generateInterviewFeedback(interviewId: string) {
   }
 
   await updateInterviewDb(interviewId, { feedback })
+
+  revalidatePath(`/app/job-infos/${interview.jobInfo.id}/interviews/${interviewId}`)
 
   return { error: false }
 }

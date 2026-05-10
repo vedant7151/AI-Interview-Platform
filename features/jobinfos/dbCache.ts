@@ -7,11 +7,11 @@ export function getJobInfoGlobalTag() {
 }
 
 export function getJobInfoUserTag(userId : string){
-    return getUserTag("jobInfos" , userId)
+    return getUserTag(userId, "jobInfos")
 }
 
 export function getJobInfoIdTag(id : string){
-    return getUserTag("jobInfos" , id)
+    return getIdTag("jobInfos" , id)
 }
 
 
@@ -22,7 +22,7 @@ export function revalidateJobInfoCache({
     id : string;
     userId : string
 }){
-    revalidateTag(getJobInfoGlobalTag())
-    revalidateTag(getJobInfoUserTag(userId))
-    revalidateTag(getJobInfoIdTag(id))
+    revalidateTag(getJobInfoGlobalTag(), "max")
+    revalidateTag(getJobInfoUserTag(userId), "max")
+    revalidateTag(getJobInfoIdTag(id), "max")
 }

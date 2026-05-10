@@ -25,7 +25,15 @@ export async function getUser(id: string) {
 
 export async function ensureUser() {
     try {
-        const u = await currentUser()
+        let u = await currentUser()
+        if (!u) {
+            const { getCurrentUser } = await import("@/services/clerk/lib/getCurrentUser")
+            const { clerkClient } = await import("@clerk/nextjs/server")
+            const { userId } = await getCurrentUser()
+            if (!userId) return null
+            const client = await clerkClient()
+            u = await client.users.getUser(userId)
+        }
         if (!u) return null
 
         const primaryEmail =
@@ -45,7 +53,7 @@ export async function ensureUser() {
         })
 
         return { ok: true }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error in ensureUser Server Action:", error)
         return null
     }
